@@ -100,8 +100,6 @@ int main(int argc, char **argv)
     }
     array[V1] = 0;
     array[V2] = 0;
-    double l1 = array[X1];
-    double l2 = array[X2];
     DOPRI8(array, steps, h);
     for (int i = 0; i < 2; i++) {
         printf("%lf ", array[i]);
