@@ -1,17 +1,23 @@
 #include <iostream>
-#include <algorithm>
-#include <vector>
-#include <fstream>
-#include <string>
-#include <cmath>
+#include <array>
+
+
+#define X1 0
+#define X2 1
+#define V1 2
+#define V2 3
+
+
 
 double h = 0.001;
 int steps = 30000;
+double k1, k2, m1, m2, l1, l2;
 
-double x1, x2, k1, k2, m1, m2, l1, l2;
+std::array<double, 4> array;
 
-double f_x1(double x1, double x2){ return 0.0; }
-double f_x2(double x1, double x2){ return 0.0; }
+std::array<double, 4> f(std::array<double, 4> array){
+    
+}
 
 void DOPRI8(double x1, double x2, int steps, double h) {
 
@@ -34,42 +40,44 @@ void DOPRI8(double x1, double x2, int steps, double h) {
 
     double b_coefs[] = {(double)14005451 / 335480064, 0, 0, 0, 0, (double)-59238493 / 1068277825, (double)181606767 / 758867731, (double)561292985 / 797845732, (double)-1041891430 / 1371343529, (double)760417239 / 1151165299, (double)118820643 / 751138087, (double)-528747749 / 2220607170, (double)1 / 4};
 
-    double k_x1[13] = {0};
-    double k_x2[13] = {0};
+    std::array<std::array<double, 4>, 13> k = {};
 
     do
     {
-        k_x1[0] = f_x1(x1, x2);
-        k_x2[0] = f_x2(x1, x2);
+        k[0] = f(array);
 
-        double sum_x1, sum_x2;
+        std::array<double, 4> sums = {0};
 
         for (int i = 1; i <= 12; i++)
         {
-            sum_x1 = 0, sum_x2 = 0;
+            sums.fill(0.0);
 
             for (int j = 0; j < i; j++)
             {
-                sum_x1 += a[i][j] * k_x1[j];
-                sum_x2 += a[i][j] * k_x2[j];
+                for (int ind = 0; ind < 4; ++ind) { 
+                    sums[ind] += a[i][j] * k[ind][j];
+                }
+            }
+            for (int ind = 0; ind < 4; ++ind) { 
+                sums[ind] = array[ind] + sums[ind] * h;
             }
 
-            sum_x1 = x1 + sum_x1 * h;
-            sum_x2 = x2 + sum_x2 * h;
-
-            k_x1[i] = f_x1(sum_x1, sum_x2);
-            k_x2[i] = f_x2(sum_x1, sum_x2);
+            for (int ind = 0; ind < 4; ++ind) { 
+                k[i] = f(sums);
+            }
         }
 
-        sum_x1 = 0, sum_x2 = 0;
+        sums.fill(0.0);
 
         for (int i = 0; i <= 12; i++)
         {
-            sum_x1 += b_coefs[i] * k_x1[i];
-            sum_x2 += b_coefs[i] * k_x2[i];
+            for (int ind = 0; ind < 4; ++ind) { 
+                sums[ind] += b_coefs[i] * k[ind][i];
+            }
         }
-        x1 += sum_x1 * h;
-        x2 += sum_x2 * h;
+        for (int ind = 0; ind < 4; ++ind) { 
+            array[ind] += sums[ind] * h;
+        }
 
     } while (--steps != 0);
 }
@@ -81,11 +89,11 @@ int main(int argc, char **argv)
         fprintf(stderr, "Usage: prog <x1> <x2> <k1> <k2> <m1> <m2>\n");
         return -1;
     }
-    if (sscanf(argv[1], "%lf", &x1) < 1 || sscanf(argv[2], "%lf", &x2) < 1 || sscanf(argv[3], "%lf", &k1) < 1 || sscanf(argv[4], "%d", &k2) < 1 || sscanf(argv[5], "%lf", &m1) < 1 || sscanf(argv[5], "%lf", &m2) < 1)
+    if (sscanf(argv[1], "%lf", &array[1]) < 1 || sscanf(argv[2], "%lf", &array[2]) < 1 || sscanf(argv[3], "%lf", &k1) < 1 || sscanf(argv[4], "%lf", &k2) < 1 || sscanf(argv[5], "%lf", &m1) < 1 || sscanf(argv[6], "%lf", &m2) < 1)
     {
         fprintf(stderr, "Usage: prog <x1> <x2> <k1> <k2> <m1> <m2>\n");
         return -1;
     }
-    DOPRI8(x1, x2, steps, h);
+    // DOPRI8(array, steps, );
     return 0;
 }
