@@ -2,24 +2,27 @@
 #include <array>
 
 
-#define X1 0
-#define X2 1
-#define V1 2
-#define V2 3
-
-
+const int X1 = 0;
+const int X2 = 1;
+const int V1 = 2;
+const int V2 = 3;
 
 double h = 0.001;
 int steps = 30000;
 double k1, k2, m1, m2, l1, l2;
 
-std::array<double, 4> array;
 
-std::array<double, 4> f(std::array<double, 4> array){
-    
+
+std::array<double, 4> f(std::array<double, 4> state){
+    std::array<double, 4> derivative;
+    derivative[X1] = state[V1];
+    derivative[X2] = state[V2];
+    derivative[V1] = ((-k1 * (state[X1] - l1)) + (k2 * (state[X2] - state[X1] - l2))) / m1;
+    derivative[V2] = (-k2 * (state[X2] - state[X1] - l2)) / m2;
+    return derivative;
 }
 
-void DOPRI8(double x1, double x2, int steps, double h) {
+void DOPRI8(std::array<double, 4> &array, int steps, double h) {
 
     // Таблица Бутчера
     static double a[14][13] = {
@@ -45,7 +48,6 @@ void DOPRI8(double x1, double x2, int steps, double h) {
     do
     {
         k[0] = f(array);
-
         std::array<double, 4> sums = {0};
 
         for (int i = 1; i <= 12; i++)
@@ -80,20 +82,30 @@ void DOPRI8(double x1, double x2, int steps, double h) {
         }
 
     } while (--steps != 0);
+    
 }
 
 int main(int argc, char **argv)
-{
-    if (argc < 7)
+{   
+    std::array<double, 4> array;
+    if (argc < 9)
     {
-        fprintf(stderr, "Usage: prog <x1> <x2> <k1> <k2> <m1> <m2>\n");
+        fprintf(stderr, "Usage: prog <x1> <x2> <l1> <l2> <k1> <k2> <m1> <m2>\n");
         return -1;
     }
-    if (sscanf(argv[1], "%lf", &array[1]) < 1 || sscanf(argv[2], "%lf", &array[2]) < 1 || sscanf(argv[3], "%lf", &k1) < 1 || sscanf(argv[4], "%lf", &k2) < 1 || sscanf(argv[5], "%lf", &m1) < 1 || sscanf(argv[6], "%lf", &m2) < 1)
+    if (sscanf(argv[1], "%lf", &array[X1]) < 1 || sscanf(argv[2], "%lf", &array[X2]) < 1 || sscanf(argv[3], "%lf", &l1) < 1 || sscanf(argv[4], "%lf", &l2) < 1 || sscanf(argv[5], "%lf", &k1) < 1 || sscanf(argv[6], "%lf", &k2) < 1 || sscanf(argv[7], "%lf", &m1) < 1 || sscanf(argv[8], "%lf", &m2) < 1)
     {
-        fprintf(stderr, "Usage: prog <x1> <x2> <k1> <k2> <m1> <m2>\n");
+        fprintf(stderr, "Usage: prog <x1> <x2> <l1> <l2> <k1> <k2> <m1> <m2>\n");
         return -1;
     }
-    // DOPRI8(array, steps, );
+    array[V1] = 0;
+    array[V2] = 0;
+    double l1 = array[X1];
+    double l2 = array[X2];
+    DOPRI8(array, steps, h);
+    for (int i = 0; i < 2; i++) {
+        printf("%lf ", array[i]);
+    }
+    printf("\n");
     return 0;
 }
