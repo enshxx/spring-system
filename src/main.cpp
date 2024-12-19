@@ -1,135 +1,102 @@
 #include <iostream>
 #include <fstream>
-#include "function.hpp"
 #include "jacobian.hpp"
 #include "LUDecompSolver.hpp"
+#include "jacobianPlusODE.hpp"
+
+
+void printParams(std::__1::vector<double> &targetParams, std::__1::vector<double> &optParams)
+{
+  std::cout << "target params: " << std::endl;
+  for (const auto &el : targetParams)
+  {
+    std::cout << el << ' ';
+  }
+  std::cout << '\n';
+  std::cout << "optParams: " << std::endl;
+  for (const auto &el : optParams)
+  {
+    std::cout << el << ' ';
+  }
+  std::cout << '\n';
+}
 
 int main(int argc, char **argv)
 {   
-    /*
-    double x10, x20, v1, v2, k1, k2, m1, m2, l1, l2;
-    if (argc < 11)
-    {
-        fprintf(
-            stderr,
-            "Usage: prog <x1> <x2> <v1> <v2>  <k1> <k2> <m1> <m2> <l1> <l2>\n"
-        );
-        return -1;
-    }
-    if (sscanf(argv[1], "%lf", &x10) < 1 ||
-        sscanf(argv[2], "%lf", &x20) < 1 ||
-        sscanf(argv[3], "%lf", &v1) < 1 ||
-         sscanf(argv[4], "%lf", &v2) < 1 ||
-        sscanf(argv[5], "%lf", &k1) < 1 ||
-         sscanf(argv[6], "%lf", &k2) < 1 ||
-        sscanf(argv[7], "%lf", &m1) < 1 ||
-         sscanf(argv[8], "%lf", &m2) < 1 ||
-        sscanf(argv[9], "%lf", &l1) < 1 || 
-        sscanf(argv[10], "%lf", &l2) < 1) 
-    {
-      fprintf(stderr,
-       "Usage: prog <x1> <x2> <v1> <v2>  <k1> <k2> <m1> <m2> <l1> <l2>\n");
-      return -1;
-    }
-    Params p = {x10, x20, v1, v2, k1, k2, m1, m2, l1, l2};
-    */
-    // target param values to run out model to generate
-    // data points to simulate measurement data 
-
-    Params targetParams = {1, 1.4, 1, 1, 1, 1, 1, 1, 1, 1};
+// params legend  {v10 x10 v20 x20 K1 K2 M1 M2 L1 L2}
+    std::vector<double> targetParams = 
+        {1, 1, 1, 1.4, 1, 1, 1, 1, 1, 1};
     // initial param values to start optimization
-    Params optParams = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
-    FourColumnTable stepsData;
+    std::vector<double> optParams = {1, 0.7, 0.0, 1.3, 1, 1, 1, 1, 1, 1};
+    
     double odeIntegrationStep = 0.001;
     size_t maxSteps = 60000;
     double noiseLevel = 0.2;
-
-    //jacobian numberical calculation step
-    double paramStep = 0.001;
+  
     size_t gaussNewtonIterations = 100;
     // DOPRI8(array, p, steps, h, stepsData);
     // Euler(array, p, steps, h, stepsData);
-    // total number of data sample is about maxSteps / sampleDistance
-    size_t sampleDistance = 500;
-    std::vector<int> solutionSteps; // = {0, 2000, 3000};
+    // total number of data samples is about maxSteps / sampleDistance
+    size_t sampleSteps = 600;
     
-    for (int i = 0; i < maxSteps; i++) {
-        if (i % sampleDistance == 0) {
-            solutionSteps.push_back(i);
-        }
-    }
-    
-    FourColumnTable solutionOutput;
-    DOPRI8(
-      solutionOutput,
-      targetParams, solutionSteps, odeIntegrationStep, stepsData);
     // sample some points from the stepsData
-    FourColumnTable dataPoints;
-    dataPoints.resize(solutionOutput.size());
+    Matrix dStatedTheta;
+    Matrix stateDataPoints;
+    Matrix generatedMeasurements(sampleSteps*STATE_SIZE, 1);
+    solveStatePlusJacODEs(
+      targetParams,
+      maxSteps,
+      odeIntegrationStep,
+      sampleSteps,
+      stateDataPoints,
+      dStatedTheta
+    );
+    printMatrixToFile(dStatedTheta, "jacobian.txt");
     srand(time(NULL));
-    for(auto solId = 0; solId < solutionOutput.size(); solId++)
+    for(auto solId = 0; solId < stateDataPoints.rows(); solId++)
     {
-        for (auto i = 0; i<4; ++i){
+        for (auto i = 0; i<STATE_SIZE; ++i){
             double noisy = 
-                solutionOutput[solId][i] 
+                stateDataPoints.matrix[solId][0] 
                 + (rand() / double(RAND_MAX) - 0.5) * noiseLevel;
-            dataPoints[solId][i] = noisy;
+            generatedMeasurements.matrix[solId][0] = noisy;
         }
     }
+    printMatrixToFile(generatedMeasurements, "data_points.txt");
 
-    writeSolutionToFiles(
-        "data_points.txt", dataPoints,
-        "data.txt", solutionSteps, stepsData);
 
     // here we use gauss-newton method to find parameters
 
-    std::cout << "target params: " << std::endl;
-    for (const auto &el : targetParams.p) {
-      std::cout << el << ' ';
-    }
-    std::cout << '\n';
-    std::cout << "optParams: " << std::endl;
-    for (const auto &el : optParams.p) {
-      std::cout << el << ' ';
-    }
-    std::cout << '\n';
-
-    Matrix target(dataPoints.size() * 4, 1);
-    size_t rowIdx = 0;
-    for (const auto &row : dataPoints) {
-      for (const auto &el : row) {
-        target.matrix[rowIdx][0] = el;
-        ++rowIdx;
-      }
-    }
+    printParams(targetParams, optParams);
 
     double sumOfSquares = INFINITY;
     double prevSumOfSquares = INFINITY;
+  
     for (size_t ic = 0; ic < gaussNewtonIterations; ++ic) {
       prevSumOfSquares = sumOfSquares;
-      Matrix resid = residual(
-        target, optParams, odeIntegrationStep, solutionSteps, sumOfSquares);
+      Matrix resid(generatedMeasurements.rows(), 1);
+      Matrix stateSolution;
+      Matrix jac;
+      solveStatePlusJacODEs(optParams, maxSteps, odeIntegrationStep, 
+        sampleSteps, stateSolution, jac);
+      // multipy jacobian by -1 
+      multiplyMatrixByNumber(jac, -1.0);
+      subtractMatrices(generatedMeasurements, stateSolution, resid);
+      // printMatrixToFile(resid, "resid.txt");
+      Matrix residTransposed = transpose(resid);
+      Matrix sumOfSquaresMatrix;
+      multiplyMatrices(residTransposed, resid, sumOfSquaresMatrix);
+      sumOfSquares = sumOfSquaresMatrix.matrix[0][0];
       std::cout << "iteration " << ic << std::endl;
-      std::cout << "targetParams" << std::endl;
-      for (size_t i = 0; i < PARAM_COUNT; ++i) {
-        std::cout << targetParams.p[i] << " ";
-      }
+      printParams(targetParams, optParams);
       std::cout << std::endl;
-      std::cout << "optParams" << std::endl;
-      for (size_t i = 0; i < PARAM_COUNT; ++i) {
-        std::cout << optParams.p[i] << " ";
-      }
-      std::cout << std::endl;
-      std::cout << "sum of squares: " << sumOfSquares 
+      std::cout << "sum of squares: " << sumOfSquares
                 << std::endl;
-      if ((sumOfSquares > prevSumOfSquares) || (std::isnan(sumOfSquares))) {
-        std::cout << "sum of squares increased or nan" << std::endl;
+      if (/*(sumOfSquares > 2*prevSumOfSquares)* || */ (std::isnan(sumOfSquares))) {
+        std::cout << "sum of squares is nan, exitting" << std::endl;
         break;
       }    
-      Matrix jac = jacobianOfResidual(
-        optParams, paramStep, odeIntegrationStep, solutionSteps
-     );
-    
+      // printMatrixToFile(jac, "jacobian.txt");
       Matrix jacTransposed = transpose(jac);
       Matrix jacTMulByRes;
       multiplyMatrices(jacTransposed, resid, jacTMulByRes);
@@ -146,12 +113,9 @@ int main(int argc, char **argv)
 
       for (size_t row = 0; row < deltaParams.rows(); ++row) {
 
-        optParams.p[row] += deltaParams.matrix[row][0];
-      }
-      
-      std::cout << std::endl;
-    
+        optParams[row] += deltaParams.matrix[row][0];
+      }    
     }
-
+  
     return 0;
 }

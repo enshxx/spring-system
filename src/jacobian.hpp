@@ -72,4 +72,43 @@ Matrix jacobianOfResidual(Params const &p, double paramStep,
   return result;
 }
 
+
+//calculate Jacbian based on Euler method finite difference
+// approximation for our ODE system
+// params here assumed to be 
+Matrix jacobianOfResidualEuler(Params const &p, double paramStep,
+                          double integrationStep,
+                          std::vector<int> const &timeSteps) {
+  size_t DataPointCount = timeSteps.size();
+  uint8_t velODEcount = 2;
+  Matrix result(velODEcount * DataPointCount, PARAM_COUNT);
+  FourColumnTable solution;
+  FourColumnTable stepsDebugData;
+  DOPRI8(solution, p, timeSteps, integrationStep, stepsDebugData);
+
+  size_t velocityEqCount = 2;
+  for (auto solId = 0; solId < solution.size(); ++solId) {
+    // assume dx1/dparam_i, dx2/dparam_i is zero 
+    // because they depend on dt*dt
+    // so jacobian only calculated for 
+    for (auto j = 0; j < velocityEqCount; ++j) {
+      auto rowId = velocityEqCount * solId + j;
+      double dt = integrationStep;
+      double x1n = solution[solId][X1];
+      double x2n = solution[solId][X2];
+      result.matrix[rowId][K1] = -dt*(p[L1] - x1n)/p[M1];
+      result.matrix[rowId][K2] = 
+        -dt*(-p[L2] - x1n + x2n)/p[M1];
+      result.matrix[rowId][M1] = 
+        dt*(-p[K1]*(-p[L1] + x1n) + p[K2]*(-p[L2] - x1n + x2n))/(p[M1]*p[M1]);
+      result.matrix[rowId][M2] = 0.0;
+      result.matrix[rowId][L1] = -dt*p[K1]/p[M1];
+      result.matrix[rowId][L2] = dt*p[K2]/p[M1];
+    }
+  }
+
+  return result;
+}
+
+
 #endif

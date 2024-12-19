@@ -30,7 +30,7 @@ using FourColumnTable = std::vector<std::array<double, 4> >;
 using StateVector = std::array<double, 4>;
 
 struct Params{
-    std::array<double, 10> p;
+    std::array<double, PARAM_COUNT> p;
     Params step(double h, ParamIndices index) const {
         Params result = {p};  
         result.p[index] += h;

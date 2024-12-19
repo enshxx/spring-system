@@ -5,6 +5,7 @@
 #include <vector>
 #include <iomanip>
 #include <cmath>
+#include <fstream>
 
 
 struct Matrix {
@@ -28,6 +29,50 @@ void multiplyMatrixByNumber(Matrix &A, double n) {
   for (size_t i = 0; i < A.rows(); ++i) {
     for (size_t j = 0; j < A.cols(); ++j) {
        A.matrix[i][j] *= n;
+    }
+  }
+}
+
+// Function to subtract matrix B from matrix A
+void subtractMatrices(const Matrix &A,
+                      const Matrix &B,
+                      Matrix &C) {
+  int rowsA = A.rows();
+  int colsA = A.cols();
+
+  // Check if matrices can be subtracted
+  if (rowsA != B.rows() || colsA != B.cols()) {
+    std::cerr << "Error: Matrices cannot be subtracted" << std::endl;
+    return;
+  }
+
+  // Perform subtraction
+  for (size_t i = 0; i < rowsA; i++) {
+    for (size_t j = 0; j < colsA; j++) {
+      C.matrix[i][j] = A.matrix[i][j] - B.matrix[i][j];
+    }
+  }
+}
+// Function to add two matrices
+void addMatrices(const Matrix &A,
+                const Matrix &B,
+                Matrix &C) {
+  int rowsA = A.rows();
+  int colsA = A.cols();
+
+  // Check if matrices can be added
+  if (rowsA != B.rows() || colsA != B.cols()) {
+    std::cerr << "Error: Matrices cannot be added" << std::endl;
+    return;
+  }
+
+  // Initialize result matrix
+  C = Matrix(rowsA, colsA);
+
+  // Add matrices
+  for (int i = 0; i < rowsA; i++) {
+    for (int j = 0; j < colsA; j++) {
+      C.matrix[i][j] = A.matrix[i][j] + B.matrix[i][j];
     }
   }
 }
@@ -98,6 +143,22 @@ void printMatrix(const Matrix &mat) {
     }
     std::cout << std::endl;
   }
+}
+
+// Function to print matrix to file
+void printMatrixToFile(const Matrix &mat, const std::string& filename) {
+  std::ofstream of(filename);
+  if (!of) {
+    std::cerr << "Error: Could not open file " << filename << std::endl;
+    return;
+  }
+  for (int i = 0; i < mat.rows(); i++) {
+    for (int j = 0; j < mat.cols(); j++) {
+      of << std::scientific << mat.matrix[i][j] << " ";
+    }
+    of << std::endl;
+  }
+  of.close();
 }
 
 #endif
