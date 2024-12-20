@@ -3,6 +3,7 @@
 #include "function.hpp"
 #include "matrix.hpp"
 #include "DOPRINew.hpp"
+#include <cstdint>
 #include <sstream>
 
 // #define WRITE_SOLUTIONS_TO_FILES

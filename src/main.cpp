@@ -5,7 +5,7 @@
 #include "jacobianPlusODE.hpp"
 
 
-void printParams(std::__1::vector<double> &targetParams, std::__1::vector<double> &optParams)
+void printParams(std::vector<double> &targetParams, std::vector<double> &optParams)
 {
   std::cout << "target params: " << std::endl;
   for (const auto &el : targetParams)
