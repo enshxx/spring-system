@@ -1,6 +1,7 @@
 import sympy
 from sympy import *
 
+# using approach from here
 # https://math.stackexchange.com/questions/3470910/how-to-fit-ordinary-differential-equations-to-empirical-data
 # theta = { k1, k2, m1, m2, l1, l2} = { theta5, ..., theta10}
 # x = {x_1, x_2, x_3, x_4} = { v1, x1, v2, x2}

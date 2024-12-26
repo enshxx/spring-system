@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 
-diffFile =  'jacobian.txt'
+diffFile =  'build/jacobian.txt'
 
 with open(diffFile, 'r') as f:
     raw_data_diff = [ [float(x) for x in line.strip().split()] for line in f]

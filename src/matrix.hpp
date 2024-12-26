@@ -19,6 +19,14 @@ struct Matrix {
     return matrix.size();
   }
 
+  void setToZero() {
+    for (auto &row : matrix) {
+            for (auto &el : row) {
+                el = 0.0;
+            }
+        }
+  }
+
   size_t cols() const {
     return matrix.empty() ? 0 : matrix[0].size();
   }
@@ -65,9 +73,9 @@ void addMatrices(const Matrix &A,
     std::cerr << "Error: Matrices cannot be added" << std::endl;
     return;
   }
-
-  // Initialize result matrix
-  C = Matrix(rowsA, colsA);
+  if (rowsA != C.rows() || colsA != C.cols()) {
+    std::cerr << "result matrix has incorrect dimensions" << std::endl;
+  }
 
   // Add matrices
   for (int i = 0; i < rowsA; i++) {
@@ -90,12 +98,14 @@ void multiplyMatrices(const Matrix &A,
     return;
   }
 
-  // Initialize result matrix
-  C = Matrix(rowsA, colsB);
+  if (rowsA != C.rows() || colsB != C.cols()) {
+    std::cerr << "result matrix has incorrect dimensions" << std::endl;
+  }
 
   // Perform matrix multiplication
   for (int i = 0; i < rowsA; i++) {
     for (int j = 0; j < colsB; j++) {
+      C.matrix[i][j] = 0;
       for (int k = 0; k < colsA; k++) {
         C.matrix[i][j] += A.matrix[i][k] * B.matrix[k][j];
       }
@@ -126,14 +136,12 @@ bool compareMatrices(const Matrix &A, const Matrix &B, double tol) {
 
   return true; // All elements are equal
 }
-Matrix transpose(const Matrix &A) {
-  Matrix B = Matrix(A.cols(), A.rows());
+void transpose(const Matrix &A, Matrix  &B) {
   for (int i = 0; i < A.rows(); i++) {
     for (int j = 0; j < A.cols(); j++) {
       B.matrix[j][i] = A.matrix[i][j];
     }
   }
-  return B;
 }
 // Function to print matrix
 void printMatrix(const Matrix &mat) {
@@ -147,14 +155,18 @@ void printMatrix(const Matrix &mat) {
 
 // Function to print matrix to file
 void printMatrixToFile(const Matrix &mat, const std::string& filename) {
-  std::ofstream of(filename);
+  std::ofstream of(filename, std::ios::out | std::ios::trunc);
+  if (!of.good()) {
+    of.open(filename, std::ios::out | std::ios::trunc | std::ios::app);
+  }
   if (!of) {
     std::cerr << "Error: Could not open file " << filename << std::endl;
     return;
   }
   for (int i = 0; i < mat.rows(); i++) {
     for (int j = 0; j < mat.cols(); j++) {
-      of << std::scientific << mat.matrix[i][j] << " ";
+      of << std::scientific << std::setprecision(6) << std::setw(15) 
+      << mat.matrix[i][j] << " ";
     }
     of << std::endl;
   }

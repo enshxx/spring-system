@@ -9,13 +9,15 @@ int main() {
     double odeIntegrationStep = 0.001;
     size_t maxSteps = 60000;
     Matrix state, diffStateByParams;
+    MatrixData odeSolData;
     solveStatePlusJacODEs(
         params,
         maxSteps, 
         odeIntegrationStep,
         600,
         state,
-        diffStateByParams); 
+        diffStateByParams, 
+        odeSolData); 
     printMatrixToFile(state, "State.txt");
     printMatrixToFile(diffStateByParams, "diffStateByParams.txt");
     

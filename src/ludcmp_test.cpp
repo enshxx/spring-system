@@ -22,13 +22,13 @@ int main() {
   std::cout << "U matrix:" << std::endl;
   printMatrix(U);
 
-  solveLinearSystem(L, U, b, x, n);
+  solveLinearLU(L, U, b, x, n);
 
   std::cout << "Solution vector:" << std::endl;
   printMatrix(x);
   std::cout << std::endl;
 
-  Matrix checkMatrix(n, n);
+  Matrix checkMatrix(matrix.rows(), x.cols());
   multiplyMatrices(matrix, x, checkMatrix);
   std::cout << "Check matrix:" << std::endl;
   printMatrix(checkMatrix);

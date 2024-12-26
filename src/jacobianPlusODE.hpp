@@ -1,10 +1,11 @@
+#ifndef JACOBIANPLUSODE_H
+#define JACOBIANPLUSODE_H
 
-#define STATE_SIZE 4
-#define PARAM_SIZE 10
 
 #include <array>
 #include "matrix.hpp"
-#include "DOPRINew.hpp"
+#include "odesolvers.hpp"
+#include "matrixdata.hpp"
 
 // param names
 constexpr size_t theta1 = 0;
@@ -41,14 +42,15 @@ constexpr size_t x_3 = 2;
 constexpr size_t x_4 = 3;
     
 
-
-void diffs(
+void calculateDiffs(
     double t, 
     double* statePlusStateDiffTheta,
     double* diffs,
-    const double* p
+    const double* p,
+    MatrixData& m
 )
 {
+    
     // F - state diffs by t
     double *s = statePlusStateDiffTheta;
     double* stateDiffTheta = statePlusStateDiffTheta + STATE_SIZE;
@@ -58,7 +60,7 @@ void diffs(
     diffs[v2] = -p[theta6]*(-p[theta8] - s[x_2] + s[x_4])/p[theta10];
     diffs[x2] = s[x_3];
   
-    Matrix FdiffState(STATE_SIZE, STATE_SIZE);
+    Matrix& FdiffState = m.FdiffState;
     FdiffState.matrix[0][0] = 0.0;
     FdiffState.matrix[0][1] = (-p[theta5] - p[theta6])/p[theta9];
     FdiffState.matrix[0][2] = 0.0;
@@ -79,7 +81,7 @@ void diffs(
     FdiffState.matrix[3][2] = 1;
     FdiffState.matrix[3][3] = 0;
 
-    Matrix FdiffParam(STATE_SIZE, PARAM_SIZE);
+    Matrix& FdiffParam = m.FdiffParam;
     FdiffParam.matrix[0][0] = 0.0;
     FdiffParam.matrix[0][1] = 0.0;    
     FdiffParam.matrix[0][2] = 0.0;
@@ -104,11 +106,11 @@ void diffs(
     };
     FdiffParam.matrix[3] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
-    Matrix stateDiffThetaDot(STATE_SIZE, PARAM_SIZE);
+    Matrix& stateDiffThetaDot = m.stateDiffThetaDot;
 
-    Matrix tmp(STATE_SIZE, PARAM_SIZE);
+    Matrix& tmp = m.tmp;
 
-    Matrix stateDiffThetaMat = Matrix(STATE_SIZE, PARAM_SIZE);
+    Matrix& stateDiffThetaMat = m.stateDiffThetaMat;
     for (auto row=0; row<STATE_SIZE; ++row) {
         stateDiffThetaMat.matrix[row].assign(
             stateDiffTheta + row*PARAM_SIZE, 
@@ -132,7 +134,8 @@ void solveStatePlusJacODEs(
     size_t solutionSteps, double odeIntegrationStep,
     size_t sampleSteps,
     Matrix &state,
-    Matrix &diffStateByParams
+    Matrix &diffStateByParams,
+    MatrixData& solverData
 ) {
     
     state.matrix.resize(sampleSteps*STATE_SIZE);
@@ -157,9 +160,9 @@ void solveStatePlusJacODEs(
     double t = 0;
     size_t sampleIncrement = solutionSteps / sampleSteps;
     size_t sampleId = 0;
-    double debugDiffs[STATE_SIZE + STATE_SIZE*PARAM_SIZE];
+    
+    // double debugDiffs[STATE_SIZE + STATE_SIZE*PARAM_SIZE];
     for (auto tStep = 0; tStep < solutionSteps; ++tStep) {
-        
         dormandPrince(
             t,
             curSol.data(),
@@ -167,8 +170,9 @@ void solveStatePlusJacODEs(
             t,
             curSol.data(),
             params.data(),
-            diffs,
-            STATE_SIZE + STATE_SIZE*PARAM_SIZE
+            calculateDiffs,
+            STATE_SIZE + STATE_SIZE*PARAM_SIZE,
+            solverData
         );
         
         if (tStep % sampleIncrement == 0) {
@@ -188,3 +192,5 @@ void solveStatePlusJacODEs(
 }
 
 // Matrix residual();
+
+#endif

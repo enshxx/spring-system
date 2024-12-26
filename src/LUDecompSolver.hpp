@@ -2,7 +2,6 @@
 #define LUDECOMPSOLVER_H
 #include <iostream>
 #include <vector>
-
 #include "matrix.hpp"
 // Function to perform LU decomposition
 void luDecomposition(Matrix &matrix, int n,
@@ -29,7 +28,7 @@ void luDecomposition(Matrix &matrix, int n,
 }
 
 // Function to solve linear system using LU decomposition
-void solveLinearSystem(const Matrix &L,
+void solveLinearLU(const Matrix &L,
                        const Matrix &U,
                        const Matrix &b,
                        Matrix &x,
