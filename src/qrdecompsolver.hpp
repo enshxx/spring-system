@@ -1,4 +1,11 @@
+#ifndef QRDECOMPSOLVER_H
+#define QRDECOMPSOLVER_H
+
 #include "matrix.hpp"
+
+#include <vector>
+#include <cmath>
+#include <algorithm>
 
 void qrDecomposition(const Matrix &A, Matrix &Q, Matrix &R) {
   int m = A.rows();
@@ -39,6 +46,31 @@ void qrDecomposition(const Matrix &A, Matrix &Q, Matrix &R) {
       R.matrix[k][j] = r;
     }
   }
+}
+
+// Function to calculate singular values of a matrix
+double isMatrixWellConditioned(const Matrix &A, double& kappa) {
+    int m = A.rows();
+    int n = A.cols();
+    Matrix At(n, n);
+    transpose(A, At);
+    Matrix AtA(At.rows(), A.cols());
+    multiplyMatrices(At, A, AtA);
+    
+    Matrix Q, R;
+    qrDecomposition(AtA, Q, R);
+    
+    std::vector<double> singularValues(n);
+    for (int i = 0; i < n; i++) {
+        singularValues[i] = std::sqrt(R.matrix[i][i]);
+    }
+    /*
+    if (singularValues.back() < 1e-12) {
+        return false;
+    }
+    */
+    kappa = singularValues[0] / singularValues.back();
+    return kappa < 1e6;
 }
 
 void svd(const Matrix &A, Matrix &U, Matrix &S, Matrix &Vt) {
@@ -95,3 +127,5 @@ void solveLinearQR(const Matrix &Q, const Matrix &R, const Matrix &b, Matrix &x,
     x.matrix[i][0] /= R.matrix[i][i];
   }
 }
+
+#endif

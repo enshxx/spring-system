@@ -11,6 +11,21 @@
 struct Matrix {
   std::vector<std::vector<double> > matrix;
 
+  static Matrix diag(std::vector<double> &v) {
+    Matrix D(v.size(), v.size());
+    for (size_t i = 0; i < v.size(); ++i) {
+      D.matrix[i][i] = v[i];
+    }
+    return D;
+  }
+  static Matrix identity(size_t n) {
+    Matrix I(n, n);
+    for (size_t i = 0; i < n; ++i) {
+      I.matrix[i][i] = 1.0;
+    }
+    return I;
+  }
+
   Matrix() {}
 
   Matrix(size_t rows, size_t cols) : 
@@ -91,6 +106,15 @@ void multiplyMatrices(const Matrix &A,
   int rowsA = A.rows();
   int colsA = A.cols();
   int colsB = B.cols();
+  
+  if (&C == &A) {
+    std::cerr << "Can't use A as result matrix" << std::endl;
+    return;
+  }
+  if (&C == &B) {
+    std::cerr << "Can't use B as result matrix" << std::endl;
+    return;
+  }
 
   // Check if matrices can be multiplied
   if (colsA != B.rows()) {
@@ -100,6 +124,7 @@ void multiplyMatrices(const Matrix &A,
 
   if (rowsA != C.rows() || colsB != C.cols()) {
     std::cerr << "result matrix has incorrect dimensions" << std::endl;
+    return;
   }
 
   // Perform matrix multiplication
