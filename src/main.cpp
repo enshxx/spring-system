@@ -76,12 +76,18 @@ int main() {
     Matrix state = create_param({x1, v1, x2, v2, m1});
     Matrix param = create_const_param_for_integrate(k1, k2, -std::numeric_limits<double>::infinity(), m2, l1, l2);
     double W = 1 / (std_dev * std_dev);
+    double sko;
     InverseProblem solver;
     solver.set_data(states).set_W(W).set_param(param);
 
     for (int i = 0; i < iter_num; ++i) {
-        state = solver.solve(state, h);
-        std::cout << state << std::endl;
+        std::tie(state, sko) = solver.solve(state, h);
+        std::cout << "x1 = " << state(0, 0) << '\n';
+        std::cout << "v1 = " << state(1, 0) << '\n';
+        std::cout << "x2 = " << state(2, 0) << '\n';
+        std::cout << "v2 = " << state(3, 0) << '\n';
+        std::cout << "m1 = " << state(4, 0) << '\n';
+        std::cout << "sko = " << sko << std::endl << std::endl;
     }
 
     return 0;

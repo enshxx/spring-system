@@ -31,7 +31,7 @@ public:
         return *this;
     }
 
-    Matrix solve(const Matrix& state, double h) {
+    std::tuple<Matrix, double> solve(const Matrix& state, double h) {
         Matrix AtWA(5, 5);
         Matrix AtWr(5, 1);
         Matrix tmp(24, 1);
@@ -44,6 +44,7 @@ public:
         ]
         */
 
+        double sko = 0;
         tmp(0, 0) = state(0, 0);
         tmp(1, 0) = state(1, 0);
         tmp(2, 0) = state(2, 0);
@@ -63,6 +64,7 @@ public:
 
                 AtWA.add((partial_derivatives * partial_derivatives.transpose()).mul(W));
                 AtWr.add(partial_derivatives.mul(data(i, j) - tmp(j, 0)).mul(W));
+                sko += (data(i, j) - tmp(j, 0)) * (data(i, j) - tmp(j, 0));
             }
 
             tmp = dormand_prince(
@@ -76,7 +78,7 @@ public:
 
         LinearSolver solver(AtWA, AtWA * state + AtWr);
         Matrix new_state = solver.solve();
-        return new_state;
+        return std::tuple<Matrix, double>(new_state, sko);
     }
 
 };
