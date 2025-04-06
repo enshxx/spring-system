@@ -3,3 +3,4 @@ build
 *.txt
 **/.DS_Store
 plots/csv_data
+**/__pycache__/
