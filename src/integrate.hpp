@@ -57,37 +57,31 @@ Matrix compute_derivatives_into_deviations(const Matrix& state, const Matrix& co
     double _dv2dx2 = -_dv2dx1;
     
 
-    // dx1/dt, dv1/dt, dx2/dt, dv2/dt
     derivatives(0, 0) = dv1dt;
     derivatives(1, 0) = -k1 / m1 * (dx1dt - l1) + k2 / m1 * (dx2dt - dx1dt - l2);
     derivatives(2, 0) = dv2dt;
     derivatives(3, 0) = -k2 / m2 * (dx2dt - dx1dt - l2);
 
-    // dx1/dx1, dv1/dx1, dx2/dx1, dv2/dx1
     derivatives(4, 0) = dv1dx1;
-    derivatives(5, 0) = _dv1dx1 * dx1dx1 + _dv1dx2 * dx2dx1;
+    derivatives(5, 0) = _dv1dx1 + _dv1dx2 * dx2dx1;
     derivatives(6, 0) = dv2dx1;
-    derivatives(7, 0) = _dv2dx1 * dx1dx1 + _dv2dx2 * dx2dx1;
+    derivatives(7, 0) = _dv2dx1 + _dv2dx2 * dx2dx1;
 
-    // dx1/dv1, dv1/dv1, dx2/dv1, dv2/dv1
     derivatives(8, 0) = dv1dv1;
     derivatives(9, 0) = _dv1dx1 * dx1dv1 + _dv1dx2 * dx2dv1;
     derivatives(10, 0) = dv2dv1;
     derivatives(11, 0) = _dv2dx1 * dx1dv1 + _dv2dx2 * dx2dv1;
 
-    // dx1/dx2, dv1/dx2, dx2/dx2, dv2/dx2
     derivatives(12, 0) = dv1dx2;
-    derivatives(13, 0) = _dv1dx2 * dx2dx2 + _dv1dx1 * dx1dx2;
+    derivatives(13, 0) = _dv1dx2 + _dv1dx1 * dx1dx2;
     derivatives(14, 0) = dv2dx2;
-    derivatives(15, 0) = _dv2dx2 * dx2dx2 + _dv2dx1 * dx1dx2;
+    derivatives(15, 0) = _dv2dx2 + _dv2dx1 * dx1dx2;
 
-    // dx1/dv2, dv1/dv2, dx2/dv2, dv2/dv2
     derivatives(16, 0) = dv1dv2;
     derivatives(17, 0) = _dv1dx1 * dx1dv2 + _dv1dx2 * dx2dv2;
     derivatives(18, 0) = dv2dv2;
     derivatives(19, 0) = _dv2dx1 * dx1dv2 + _dv2dx2 * dx2dv2;
-
-    // dx1/dm1, dv1/dm1, dx2/dm1, dv2/dm1
+    
     derivatives(20, 0) = dv1dm1;
     derivatives(21, 0) = _dv1dm1 + _dv1dx1 * dx1dm1 + _dv1dx2 * dx2dm1;
     derivatives(22, 0) = dv2dm1;
