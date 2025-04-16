@@ -2,4 +2,3 @@ build
 .vscode
 *.txt
 **/.DS_Store
-plots/csv_data
