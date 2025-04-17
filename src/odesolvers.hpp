@@ -29,16 +29,15 @@ void eulerSolver(double t0, double y0[], double h, double &t,
 void dormandPrince(double t0, double y0[], double h, double &t,
                   double y[],  const double*  p,
                   void (* dydt)(double t, double y[], double dydt[],
-                    const double * p, MatrixData& mData),
-                  int n,
-                  MatrixData& mD
+                    const double * p),
+                  int n
                    ) {
   
   double k1[n], k2[n], k3[n], k4[n], k5[n], k6[n];
   double yNew[n];
 
   // Compute k1
-  dydt(t0, y0, k1, p, mD);
+  dydt(t0, y0, k1, p);
 
   // Compute k2
   double t2 = t0 + 1.0 / 5.0 * h;
@@ -46,7 +45,7 @@ void dormandPrince(double t0, double y0[], double h, double &t,
   for (int i = 0; i < n; i++) {
     y2[i] = y0[i] + 1.0 / 5.0 * h * k1[i];
   }
-  dydt(t2, y2, k2, p, mD);
+  dydt(t2, y2, k2, p);
 
   // Compute k3
   double t3 = t0 + 3.0 / 10.0 * h;
@@ -54,7 +53,7 @@ void dormandPrince(double t0, double y0[], double h, double &t,
   for (int i = 0; i < n; i++) {
     y3[i] = y0[i] + 3.0 / 40.0 * h * k1[i] + 9.0 / 40.0 * h * k2[i];
   }
-  dydt(t3, y3, k3, p, mD);
+  dydt(t3, y3, k3, p);
 
   // Compute k4
   double t4 = t0 + 4.0 / 5.0 * h;
@@ -63,7 +62,7 @@ void dormandPrince(double t0, double y0[], double h, double &t,
     y4[i] = y0[i] + 44.0 / 45.0 * h * k1[i] - 56.0 / 15.0 * h * k2[i] +
             32.0 / 9.0 * h * k3[i];
   }
-  dydt(t4, y4, k4, p, mD);
+  dydt(t4, y4, k4, p);
 
   // Compute k5
   double t5 = t0 + 8.0 / 9.0 * h;
@@ -73,7 +72,7 @@ void dormandPrince(double t0, double y0[], double h, double &t,
             25360.0 / 2187.0 * h * k2[i] + 64448.0 / 6561.0 * h * k3[i] -
             212.0 / 729.0 * h * k4[i];
   }
-  dydt(t5, y5, k5, p, mD);
+  dydt(t5, y5, k5, p);
 
   // Compute k6
   double t6 = t0 + h;
@@ -83,7 +82,7 @@ void dormandPrince(double t0, double y0[], double h, double &t,
             46732.0 / 5247.0 * h * k3[i] + 49.0 / 176.0 * h * k4[i] -
             5103.0 / 18656.0 * h * k5[i];
   }
-  dydt(t6, y6, k6, p, mD);
+  dydt(t6, y6, k6, p);
 
   // Compute yNew
   for (int i = 0; i < n; i++) {

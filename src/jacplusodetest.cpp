@@ -12,12 +12,10 @@ int main() {
     MatrixData odeSolData;
     solveStatePlusJacODEs(
         params,
-        maxSteps, 
         odeIntegrationStep,
         600,
         state,
-        diffStateByParams, 
-        odeSolData); 
+        diffStateByParams); 
     printMatrixToFile(state, "State.txt");
     printMatrixToFile(diffStateByParams, "diffStateByParams.txt");
     

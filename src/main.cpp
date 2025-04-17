@@ -1,5 +1,6 @@
 #include <iostream>
 #include <fstream>
+#include <random>
 #include "jacobian.hpp"
 #include "linearsystemsolver.hpp"
 #include "jacobianPlusODE.hpp"
@@ -22,45 +23,49 @@ void printParams(std::vector<double> &targetParams, std::vector<double> &optPara
   std::cout << '\n';
 }
 
+double generateNoise(double sigma = 1.0)
+{
+    static std::random_device rd;
+    static std::mt19937 gen(rd());
+    static std::normal_distribution<double> dist(0.0, sigma);
+    return dist(gen);
+}
+
 int main(int argc, char **argv)
 {   
-// params legend  {v10 x10 v20 x20 K1 K2 M1 M2 L1 L2}
+// params legend  {v10 x10 v20 x20 M1 M2 L1 L2 K1 K2}
     std::vector<double> targetParams = 
-        {1, 1, 1, 1.4, 1, 1, 1, 1, 1, 1};
+        {-1, 2.5, 1, 1.4, 5, 3, 2, 5, 1, 3};
     // initial param values to start optimization
-    std::vector<double> optParams = {1, 0.8, 0.9, 1.3, 1.2, 0.4, 0.5, 1.4, 1.2, 0.8};
+    std::vector<double> optParams = {-1, 2.4, 1.4, 1, 5.4, 3.4, 2, 5, 1, 3};
     
     double odeIntegrationStep = 0.001;
-    size_t maxSteps = 60000;
     double noiseLevel = 0.2;
   
     size_t gaussNewtonIterations = 100;
     // DOPRI8(array, p, steps, h, stepsData);
     // Euler(array, p, steps, h, stepsData);
     // total number of data samples is about maxSteps / sampleDistance
-    size_t sampleSteps = 600;
-    MatrixData odeSolData;
+    size_t sampleSteps = 1000;
     // sample some points from the stepsData
     Matrix dStatedTheta;
     Matrix stateDataPoints;
     Matrix generatedMeasurements(sampleSteps*STATE_SIZE, 1);
     solveStatePlusJacODEs(
       targetParams,
-      maxSteps,
       odeIntegrationStep,
       sampleSteps,
       stateDataPoints,
-      dStatedTheta,
-      odeSolData
+      dStatedTheta
     );
     printMatrixToFile(dStatedTheta, "jacobian.txt");
-    srand(time(NULL));
+    // srand(time(NULL));
     for(auto solId = 0; solId < stateDataPoints.rows(); solId++)
     {
         for (auto i = 0; i<STATE_SIZE; ++i){
             double noisy = 
-                stateDataPoints.matrix[solId][0] 
-                + (rand() / double(RAND_MAX) - 0.5) * noiseLevel;
+                stateDataPoints.matrix[solId][0];
+                // + generateNoise(noiseLevel);
             generatedMeasurements.matrix[solId][0] = noisy;
         }
     }
@@ -79,9 +84,6 @@ int main(int argc, char **argv)
     // values of each parameters are initially the same
     // but probaly can be adjusterd depending on how well 
     // given parameter is estimated
-    constexpr double value = 0.1;
-    std::vector<double>  lambda(PARAM_COUNT, value);
-    lambda[0] = 0.01;
   
     for (size_t ic = 0; ic < gaussNewtonIterations; ++ic) {
       prevSumOfSquares = sumOfSquares;
@@ -89,14 +91,12 @@ int main(int argc, char **argv)
       Matrix stateSolution;
       Matrix jac;
       solveStatePlusJacODEs(
-        optParams, maxSteps, odeIntegrationStep, 
+        optParams, odeIntegrationStep, 
         sampleSteps, stateSolution,
-        jac, odeSolData);
+        jac);
 
       // printMatrixToFile(jac, "jacobian.txt");
 
-      // multipy jacobian by -1 
-      multiplyMatrixByNumber(jac, -1.0);
       subtractMatrices(generatedMeasurements, stateSolution, resid);
       // printMatrixToFile(resid, "resid.txt");
       Matrix residTransposed(resid.cols(), resid.rows());
@@ -125,23 +125,10 @@ int main(int argc, char **argv)
 
       Matrix jacTByJac(
         jacTransposed.rows(), jac.cols());
-      multiplyMatrices( jacTransposed, jac, jacTByJac);
-
-      double kappa = 0;
-      // introduce simple Tichonov regularization
-      
-      Matrix regul = Matrix::diag(lambda);
-      addMatrices(jacTByJac, regul, jacTByJac);
-      if (!isMatrixWellConditioned(jacTByJac, kappa)) {
-        std::cout <<
-         "Warning, jacobian is not well conditioned, kappa = " << kappa << std::endl;
-      } else {
-        std::cout << "jacobian is well conditioned, kappa = " << kappa << std::endl;
-      }
+      multiplyMatrices(jacTransposed, jac, jacTByJac);
 
       // printMatrixToFile(jacTByJac, "jacTByJac.txt");
       
-      multiplyMatrixByNumber(jacTMulByRes, -1.0);
       // solve linear system jacTByJac * x = jacTMulByRes
       int n = jacTMulByRes.rows();
       Matrix deltaParams(n, 1);
@@ -159,12 +146,10 @@ int main(int argc, char **argv)
 
     solveStatePlusJacODEs(
       optParams,
-      maxSteps,
       odeIntegrationStep,
       sampleSteps,
       stateDataPoints,
-      dStatedTheta,
-      odeSolData
+      dStatedTheta
     );
     printMatrixToFile(stateDataPoints, "opt_state_data_points.txt");
     // calculate solution for latest params
