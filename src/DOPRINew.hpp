@@ -13,7 +13,7 @@
 // Define the system of 4 ODEs
 void fnew(
   double t, double y[], double dydt[],
-   const double * p, MatrixData& mData) {
+   const double * p) {
   Params pp;
   for (auto i = 0; i < PARAM_COUNT; i++) {
     pp.p[i] = p[i];
@@ -51,7 +51,7 @@ void DOPRI8(
       array[currentTimeStep++] = {y[0], y[1], y[2], y[3]};
     } 
     
-    dormandPrince(t, y0, h, t, y, p.p.data(), fnew, 4, m);
+    dormandPrince(t, y0, h, t, y, p.p.data(), fnew, 4);
     stepPoints[i] = {y[0], y[1], y[2], y[3]};
     for (int i = 0; i < n; i++) {
       y0[i] = y[i];

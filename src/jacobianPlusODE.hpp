@@ -7,135 +7,156 @@
 #include "odesolvers.hpp"
 #include "matrixdata.hpp"
 
-// param names
-constexpr size_t theta1 = 0;
-constexpr size_t theta2 = 1;
-constexpr size_t theta3 = 2;
-constexpr size_t theta4 = 3;
-constexpr size_t theta5 = 4;
-constexpr size_t theta6 = 5;
-constexpr size_t theta7 = 6;
-constexpr size_t theta8 = 7;
-constexpr size_t theta9 = 8;
-constexpr size_t theta10 = 9;
+constexpr size_t dv1dt = 0;
+constexpr size_t dx1dt = 1;
+constexpr size_t dv2dt = 2;
+constexpr size_t dx2dt = 3;
+constexpr size_t dv1dv10 = 4;
+constexpr size_t dv1dx10 = 5;
+constexpr size_t dv1dv20 = 6;
+constexpr size_t dv1dx20 = 7;
+constexpr size_t dv1dm1 = 8;
+constexpr size_t dv1dm2 = 9;
+constexpr size_t dx1dv10 = 10;
+constexpr size_t dx1dx10 = 11;
+constexpr size_t dx1dv20 = 12;
+constexpr size_t dx1dx20 = 13;
+constexpr size_t dx1dm1 = 14;
+constexpr size_t dx1dm2 = 15;
+constexpr size_t dv2dv10 = 16;
+constexpr size_t dv2dx10 = 17;
+constexpr size_t dv2dv20 = 18;
+constexpr size_t dv2dx20 = 19;
+constexpr size_t dv2dm1 = 20;
+constexpr size_t dv2dm2 = 21;
+constexpr size_t dx2dv10 = 22;
+constexpr size_t dx2dx10 = 23;
+constexpr size_t dx2dv20 = 24;
+constexpr size_t dx2dx20 = 25;
+constexpr size_t dx2dm1 = 26;
+constexpr size_t dx2dm2 = 27;
+
+// constexpr size_t dv1dt = 0;
+// constexpr size_t dx1dt = 1;
+// constexpr size_t dv2dt = 2;
+// constexpr size_t dx2dt = 3;
+// constexpr size_t dv1dv10 = 4;
+// constexpr size_t dv1dx10 = 5;
+// constexpr size_t dv1dv20 = 6;
+// constexpr size_t dv1dx20 = 7;
+// constexpr size_t dv1dl1 = 8;
+// constexpr size_t dv1dl2 = 9;
+// constexpr size_t dv1dm1 = 10;
+// constexpr size_t dv1dm2 = 11;
+// constexpr size_t dx1dv10 = 12;
+// constexpr size_t dx1dx10 = 13;
+// constexpr size_t dx1dv20 = 14;
+// constexpr size_t dx1dx20 = 15;
+// constexpr size_t dx1dl1 = 16;
+// constexpr size_t dx1dl2 = 17;
+// constexpr size_t dx1dm1 = 18;
+// constexpr size_t dx1dm2 = 19;
+// constexpr size_t dv2dv10 = 20;
+// constexpr size_t dv2dx10 = 21;
+// constexpr size_t dv2dv20 = 22;
+// constexpr size_t dv2dx20 = 23;
+// constexpr size_t dv2dl1 = 24;
+// constexpr size_t dv2dl2 = 25;
+// constexpr size_t dv2dm1 = 26;
+// constexpr size_t dv2dm2 = 27;
+// constexpr size_t dx2dv10 = 28;
+// constexpr size_t dx2dx10 = 29;
+// constexpr size_t dx2dv20 = 30;
+// constexpr size_t dx2dx20 = 31;
+// constexpr size_t dx2dl1 = 32;
+// constexpr size_t dx2dl2 = 33;
+// constexpr size_t dx2dm1 = 34;
+// constexpr size_t dx2dm2 = 35;
 
 constexpr size_t v10 = 0;
 constexpr size_t x10 = 1;
 constexpr size_t v20 = 2;
 constexpr size_t x20 = 3;
-constexpr size_t k1 = 4;
-constexpr size_t k2 = 5;
+constexpr size_t m1 = 4;
+constexpr size_t m2 = 5;
 constexpr size_t l1 = 6;
 constexpr size_t l2 = 7;
-constexpr size_t m1 = 8;
-constexpr size_t m2 = 9;
-
-// state names
-constexpr size_t v1 = 0;
-constexpr size_t x1 = 1;
-constexpr size_t v2 = 2;
-constexpr size_t x2 = 3;
-
-constexpr size_t x_1 = 0;
-constexpr size_t x_2 = 1;
-constexpr size_t x_3 = 2;
-constexpr size_t x_4 = 3;
+constexpr size_t k1 = 8;
+constexpr size_t k2 = 9;
     
 
 void calculateDiffs(
     double t, 
-    double* statePlusStateDiffTheta,
+    double* stateDiff,
     double* diffs,
-    const double* p,
-    MatrixData& m
+    const double* p
 )
 {
     
-    // F - state diffs by t
-    double *s = statePlusStateDiffTheta;
-    double* stateDiffTheta = statePlusStateDiffTheta + STATE_SIZE;
-    diffs[v1] = 
-    (-p[theta5]*(-p[theta7] + s[x_2]) + p[theta6]*(-p[theta8] - s[x_2] + s[x_4]))/p[theta9];
-    diffs[x1] = s[x_1];
-    diffs[v2] = -p[theta6]*(-p[theta8] - s[x_2] + s[x_4])/p[theta10];
-    diffs[x2] = s[x_3];
-  
-    Matrix& FdiffState = m.FdiffState;
-    FdiffState.matrix[0][0] = 0.0;
-    FdiffState.matrix[0][1] = (-p[theta5] - p[theta6])/p[theta9];
-    FdiffState.matrix[0][2] = 0.0;
-    FdiffState.matrix[0][3] = p[theta6]/p[theta9];
+    double _dv1dx1 = -(p[k1] / p[m1] + p[k2] / p[m1]);
+    double _dv1dx2 = p[k2] / p[m1];
+    // double _dv1dk1 = -(stateDiff[dx1dt] - p[l1]) / p[m1];
+    // double _dv1dk2 = (stateDiff[dx2dt] - stateDiff[dx1dt] - p[l2]) / p[m1];
+    // double _dv1dl1 = p[k1] / p[m1];
+    // double _dv1dl2 = -p[k2] / p[m1];
+    double _dv1dm1 = p[k1] * (stateDiff[dx1dt] - p[l1]) / (p[m1] * p[m1]) - 
+        p[k2] * (stateDiff[dx2dt] - stateDiff[dx1dt] - p[l2]) / (p[m1] * p[m1]);
 
-    FdiffState.matrix[1][0] = 1;
-    FdiffState.matrix[1][1] = 0;
-    FdiffState.matrix[1][2] = 0;
-    FdiffState.matrix[1][3] = 0;
+    double _dv2dx1 = p[k2] / p[m2];
+    double _dv2dx2 = -p[k2] / p[m2];
+    // double _dv2dk2 = -(stateDiff[dx2dt] - stateDiff[dx1dt] - p[l2]) / p[m2];
+    // double _dv2dl2 = p[k2] / p[m2];
+    double _dv2dm2 = p[k2] * (stateDiff[dx2dt] - stateDiff[dx1dt] - p[l2]) / (p[m2] * p[m2]);
 
-    FdiffState.matrix[2][0] = 0;
-    FdiffState.matrix[2][1] = p[theta6]/p[theta10];
-    FdiffState.matrix[2][2] = 0;
-    FdiffState.matrix[2][3] = -p[theta6]/p[theta10];
+    for (auto i = 0; i < STATE_SIZE / 2;  ++i)
+        for (auto j = 0; j < PARAM_SIZE; ++j)
+            diffs[STATE_SIZE + 2 * PARAM_SIZE * i + PARAM_SIZE + j] = stateDiff[STATE_SIZE + 2 * PARAM_SIZE * i + j];
 
-    FdiffState.matrix[3][0] = 0;
-    FdiffState.matrix[3][1] = 0;
-    FdiffState.matrix[3][2] = 1;
-    FdiffState.matrix[3][3] = 0;
+    diffs[dv1dt] = -p[k1] / p[m1] * (stateDiff[dx1dt] - p[l1]) + 
+        p[k2] / p[m1] * (stateDiff[dx2dt] - stateDiff[dx1dt] - p[l2]);
+    diffs[dx1dt] = stateDiff[dv1dt];
+    diffs[dv2dt] = -p[k2] / p[m2] * (stateDiff[dx2dt] - stateDiff[dx1dt] - p[l2]);
+    diffs[dx2dt] = stateDiff[dv2dt];
 
-    Matrix& FdiffParam = m.FdiffParam;
-    FdiffParam.matrix[0][0] = 0.0;
-    FdiffParam.matrix[0][1] = 0.0;    
-    FdiffParam.matrix[0][2] = 0.0;
-    FdiffParam.matrix[0][3] = 0.0;
-    FdiffParam.matrix[0][4] = (p[theta7] - s[x_2])/p[theta9];
-    FdiffParam.matrix[0][5] = (-p[theta8] - s[x_2] + s[x_4])/p[theta9];
-    FdiffParam.matrix[0][6] = p[theta5]/p[theta9];
-    FdiffParam.matrix[0][7] = -p[theta6]/p[theta9];
-    FdiffParam.matrix[0][8] = 
-        -(-p[theta5]*(-p[theta7] + s[x_2]) +
-         p[theta6]*(-p[theta8] - s[x_2] + s[x_4]))/(p[theta9]*p[theta9]);
-    FdiffParam.matrix[0][9] = 0.0;
-       
-    FdiffParam.matrix[1] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
-    FdiffParam.matrix[2] = {
-        0, 0, 0, 0, 0,
-        -(-p[theta8] - s[x_2] + s[x_4])/p[theta10],
-        0,
-        p[theta6]/p[theta10],
-        0,
-        p[theta6]*(-p[theta8] - s[x_2] + s[x_4])/p[theta10]*p[theta10]
-    };
-    FdiffParam.matrix[3] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    diffs[dv1dv10] = _dv1dx1 * stateDiff[dx1dv10] + _dv1dx2 * stateDiff[dx2dv10];
+    diffs[dv2dv10] = _dv2dx1 * stateDiff[dx1dv10] + _dv2dx2 * stateDiff[dx2dv10];
 
-    Matrix& stateDiffThetaDot = m.stateDiffThetaDot;
+    diffs[dv1dx10] = _dv1dx1 * stateDiff[dx1dx10] + _dv1dx2 * stateDiff[dx2dx10];
+    diffs[dv2dx10] = _dv2dx1 * stateDiff[dx1dx10] + _dv2dx2 * stateDiff[dx2dx10];
 
-    Matrix& tmp = m.tmp;
+    // diffs[dv1dv20] = _dv1dx1 * stateDiff[dx1dv20] + _dv1dx2 * stateDiff[dx2dv20];
+    // diffs[dv2dv20] = _dv2dx1 * stateDiff[dx1dv20] + _dv2dx2 * stateDiff[dx2dv20];
 
-    Matrix& stateDiffThetaMat = m.stateDiffThetaMat;
-    for (auto row=0; row<STATE_SIZE; ++row) {
-        stateDiffThetaMat.matrix[row].assign(
-            stateDiffTheta + row*PARAM_SIZE, 
-            stateDiffTheta + row*PARAM_SIZE+PARAM_SIZE
-        );
-    }
-    multiplyMatrices(FdiffState, stateDiffThetaMat, tmp);
-    addMatrices(tmp, FdiffParam, stateDiffThetaDot);
+    // diffs[dv1dx20] = _dv1dx1 * stateDiff[dx1dx20] + _dv1dx2 * stateDiff[dx2dx20];
+    // diffs[dv2dx20] = _dv2dx1 * stateDiff[dx1dx20] + _dv2dx2 * stateDiff[dx2dx20];
 
-    for (size_t i = 0; i < STATE_SIZE; ++i) {
-        for (size_t j = 0; j < PARAM_SIZE; ++j) {
-            diffs[4 + i*PARAM_SIZE + j] = stateDiffThetaDot.matrix[i][j];
-        }
-    }
+    // diffs[dv1dk1] = _dv1dk1 + _dv1dx1 * stateDiff[dx1dk1] + _dv1dx2 * stateDiff[dx2dk1];
+    // diffs[dv2dk1] = _dv2dx1 * stateDiff[dx1dk1] + _dv2dx2 * stateDiff[dx2dk1];
+
+    // diffs[dv1dk2] = _dv1dk2 + _dv1dx1 * stateDiff[dx1dk2] + _dv1dx2 * stateDiff[dx2dk2];
+    // diffs[dv2dk2] = _dv2dk2 + _dv2dx1 * stateDiff[dx1dk2] + _dv2dx2 * stateDiff[dx2dk2];
+
+    // diffs[dv1dl1] = _dv1dl1 + _dv1dx1 * stateDiff[dx1dl1] + _dv1dx2 * stateDiff[dx2dl1];
+    // diffs[dv2dl1] = _dv2dx1 * stateDiff[dx1dl1] + _dv2dx2 * stateDiff[dx2dl1];
+
+    // diffs[dv1dl2] = _dv1dl2 + _dv1dx1 * stateDiff[dx1dl2] + _dv1dx2 * stateDiff[dx2dl2];
+    // diffs[dv2dl2] = _dv2dl2 + _dv2dx1 * stateDiff[dx1dl2] + _dv2dx2 * stateDiff[dx2dl2];
+
+    diffs[dv1dm1] = _dv1dm1 + _dv1dx1 * stateDiff[dx1dm1] + _dv1dx2 * stateDiff[dx2dm1];
+    diffs[dv2dm1] = _dv2dx1 * stateDiff[dx1dm1] + _dv2dx2 * stateDiff[dx2dm1];
+
+    diffs[dv1dm2] = _dv1dx1 * stateDiff[dx1dm2] + _dv1dx2 * stateDiff[dx2dm2];
+    diffs[dv2dm2] = _dv2dm2 + _dv2dx1 * stateDiff[dx1dm2] + _dv2dx2 * stateDiff[dx2dm2];
 
 }
 
 
 void solveStatePlusJacODEs( 
     std::vector<double> const & params,
-    size_t solutionSteps, double odeIntegrationStep,
+    double odeIntegrationStep,
     size_t sampleSteps,
     Matrix &state,
-    Matrix &diffStateByParams,
-    MatrixData& solverData
+    Matrix &diffStateByParams
 ) {
     
     state.matrix.resize(sampleSteps*STATE_SIZE);
@@ -152,17 +173,25 @@ void solveStatePlusJacODEs(
         // state at t = 0
         params[v10], params[x10], params[v20], params[x20],
         // diffStatebyTheta at t=0
-        1, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 1, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 1, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 1, 0, 0, 0, 0, 0, 0
+        1, 0, 0, 0, 0, 0,
+        0, 1, 0, 0, 0, 0,
+        0, 0, 1, 0, 0, 0,
+        0, 0, 0, 1, 0, 0
     };
     double t = 0;
-    size_t sampleIncrement = solutionSteps / sampleSteps;
-    size_t sampleId = 0;
     
     // double debugDiffs[STATE_SIZE + STATE_SIZE*PARAM_SIZE];
-    for (auto tStep = 0; tStep < solutionSteps; ++tStep) {
+    for (auto tStep = 0; tStep < sampleSteps; ++tStep) {
+
+        double* p = curSol.data() + STATE_SIZE;
+        for(auto i = 0; i < STATE_SIZE; ++i) {
+            state.matrix[tStep * STATE_SIZE + i][0] = curSol[i];
+            diffStateByParams.matrix[tStep * STATE_SIZE + i].assign(
+                    p,  p+PARAM_SIZE
+                );
+            p += PARAM_SIZE;
+        }
+        
         dormandPrince(
             t,
             curSol.data(),
@@ -171,23 +200,8 @@ void solveStatePlusJacODEs(
             curSol.data(),
             params.data(),
             calculateDiffs,
-            STATE_SIZE + STATE_SIZE*PARAM_SIZE,
-            solverData
+            STATE_SIZE + STATE_SIZE*PARAM_SIZE
         );
-        
-        if (tStep % sampleIncrement == 0) {
-
-            double* p = curSol.data() + STATE_SIZE;
-            for(auto i = 0; i < STATE_SIZE; ++i) {
-                state.matrix[sampleId*STATE_SIZE+i][0] = curSol[i];
-                diffStateByParams.matrix[sampleId*STATE_SIZE + i].assign(
-                        p,  p+PARAM_SIZE
-                    );
-                p += PARAM_SIZE;
-            }
-            
-            ++sampleId;
-        }
     }
 }
 

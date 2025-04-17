@@ -3,7 +3,7 @@
 #include "matrix.hpp"
 
 #define STATE_SIZE 4
-#define PARAM_SIZE 10
+#define PARAM_SIZE 6
 struct MatrixData {
     Matrix FdiffState;
     Matrix FdiffParam;
