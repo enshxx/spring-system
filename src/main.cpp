@@ -64,8 +64,8 @@ int main(int argc, char **argv)
     {
         for (auto i = 0; i<STATE_SIZE; ++i){
             double noisy = 
-                stateDataPoints.matrix[solId][0];
-                // + generateNoise(noiseLevel);
+                stateDataPoints.matrix[solId][0]
+                + generateNoise(noiseLevel);
             generatedMeasurements.matrix[solId][0] = noisy;
         }
     }
