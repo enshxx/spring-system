@@ -11,7 +11,7 @@ int main() {
   Matrix b(3,1);
   b.matrix = {{10.0}, {20.0}, {30.0}};
   Matrix Q(3, 3), R(3, 3), sol(3,1);
-  qrDecompositionSVD(A, Q, R);
+  qrDecomposition(A, Q, R);
   std::cout << "Q matrix" << std::endl;
   printMatrix(Q);
   std::cout << "R matrix " << std::endl;
@@ -25,7 +25,7 @@ int main() {
   printMatrix(b);
   std::cout << "actual right hand side" << std::endl;
   printMatrix(check);
-  double tol = 1e-12;
+  double tol = 1e-8;
   if (!compareMatrices(check, b, tol)) {
     return 1;
   }

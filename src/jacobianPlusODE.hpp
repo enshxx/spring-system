@@ -124,11 +124,11 @@ void calculateDiffs(
     diffs[dv1dx10] = _dv1dx1 * stateDiff[dx1dx10] + _dv1dx2 * stateDiff[dx2dx10];
     diffs[dv2dx10] = _dv2dx1 * stateDiff[dx1dx10] + _dv2dx2 * stateDiff[dx2dx10];
 
-    // diffs[dv1dv20] = _dv1dx1 * stateDiff[dx1dv20] + _dv1dx2 * stateDiff[dx2dv20];
-    // diffs[dv2dv20] = _dv2dx1 * stateDiff[dx1dv20] + _dv2dx2 * stateDiff[dx2dv20];
+    diffs[dv1dv20] = _dv1dx1 * stateDiff[dx1dv20] + _dv1dx2 * stateDiff[dx2dv20];
+    diffs[dv2dv20] = _dv2dx1 * stateDiff[dx1dv20] + _dv2dx2 * stateDiff[dx2dv20];
 
-    // diffs[dv1dx20] = _dv1dx1 * stateDiff[dx1dx20] + _dv1dx2 * stateDiff[dx2dx20];
-    // diffs[dv2dx20] = _dv2dx1 * stateDiff[dx1dx20] + _dv2dx2 * stateDiff[dx2dx20];
+    diffs[dv1dx20] = _dv1dx1 * stateDiff[dx1dx20] + _dv1dx2 * stateDiff[dx2dx20];
+    diffs[dv2dx20] = _dv2dx1 * stateDiff[dx1dx20] + _dv2dx2 * stateDiff[dx2dx20];
 
     // diffs[dv1dk1] = _dv1dk1 + _dv1dx1 * stateDiff[dx1dk1] + _dv1dx2 * stateDiff[dx2dk1];
     // diffs[dv2dk1] = _dv2dx1 * stateDiff[dx1dk1] + _dv2dx2 * stateDiff[dx2dk1];
